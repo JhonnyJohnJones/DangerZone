@@ -1,7 +1,7 @@
 package com.dangerzone.backend.config;
 
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
+import com.dangerzone.backend.model.User;
+import com.dangerzone.backend.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
