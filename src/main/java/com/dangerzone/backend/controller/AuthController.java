@@ -36,6 +36,32 @@ public class AuthController {
         return ResponseEntity.ok(new TokenResponse(token));
     }
 
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        // Verifica se já existe um usuário com o mesmo email
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already in use");
+        }
+
+        // Cria o usuário
+        User user = new User();
+        user.setFullName(request.getFullName());
+        user.setNickname(request.getNickname());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setCpf(request.getCpf());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        userRepository.save(user);
+
+        // Gera token automaticamente após o registro
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new TokenResponse(token));
+    }
+
+
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
