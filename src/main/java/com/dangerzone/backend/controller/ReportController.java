@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -52,6 +53,25 @@ public class ReportController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao registrar report: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserReports(
+            @RequestHeader("Authorization") String tokenHeader
+    ) {
+        try {
+            String token = tokenHeader.replace("Bearer ", "").trim();
+            Long userId = jwtUtil.extractUserId(token);
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+            List<Report> reports = reportRepository.findByUser(user);
+            return ResponseEntity.ok(reports);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao buscar histórico: " + e.getMessage());
         }
     }
 }
