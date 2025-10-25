@@ -3,6 +3,7 @@ package com.dangerzone.backend.controller;
 import com.dangerzone.backend.dto.AuthRequest;
 import com.dangerzone.backend.dto.TokenResponse;
 import com.dangerzone.backend.dto.UserProfileResponse;
+import com.dangerzone.backend.dto.RegisterRequest;
 import com.dangerzone.backend.model.User;
 import com.dangerzone.backend.repository.UserRepository;
 import com.dangerzone.backend.security.JwtUtil;
