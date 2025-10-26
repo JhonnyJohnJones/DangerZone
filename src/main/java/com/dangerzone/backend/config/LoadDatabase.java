@@ -12,9 +12,9 @@ public class LoadDatabase {
     @Bean
     CommandLineRunner initDatabase(UserRepository repository) {
         return args -> {
-            if (!repository.existsByEmail("exemple@example.com")) {
+            if (!repository.existsByEmail("example@example.com")) {
                 User user = new User();
-                user.setEmail("exemple@example.com");
+                user.setEmail("example@example.com");
                 user.setPasswordHash("123456"); // será armazenado como hash
                 user.setNickname("John");
                 user.setFullName("John Doe");

@@ -89,4 +89,42 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/change-data")
+    public ResponseEntity<?> changeEmail(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam String newEmail,
+            @RequestParam String password
+    ) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token missing or invalid");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtUtil.isTokenValid(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+
+        Long userId = jwtUtil.extractUserId(token);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Verifica senha
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
+        }
+
+        // Verifica se o novo e-mail já está em uso
+        if (userRepository.findByEmail(newEmail).isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already in use");
+        }
+
+        user.setEmail(newEmail);
+        userRepository.save(user);
+
+        // Gera novo token com o e-mail atualizado
+        String newToken = jwtUtil.generateToken(user.getId(), user.getEmail());
+
+        return ResponseEntity.ok(new TokenResponse(newToken));
+    }
 }
