@@ -4,6 +4,7 @@ import com.dangerzone.backend.dto.AuthRequest;
 import com.dangerzone.backend.dto.TokenResponse;
 import com.dangerzone.backend.dto.UserProfileResponse;
 import com.dangerzone.backend.dto.RegisterRequest;
+import com.dangerzone.backend.dto.ChangeDataRequest;
 import com.dangerzone.backend.model.User;
 import com.dangerzone.backend.repository.UserRepository;
 import com.dangerzone.backend.security.JwtUtil;
@@ -33,7 +34,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+        String token = jwtUtil.generateToken(user.getId());
         return ResponseEntity.ok(new TokenResponse(token));
     }
 
@@ -50,14 +51,12 @@ public class AuthController {
         user.setFullName(request.getFullName());
         user.setNickname(request.getNickname());
         user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
-        user.setCpf(request.getCpf());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(!new BCryptPasswordEncoder().encode(request.getPassword()));
 
         userRepository.save(user);
 
         // Gera token automaticamente após o registro
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+        String token = jwtUtil.generateToken(user.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new TokenResponse(token));
     }
@@ -74,27 +73,24 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
 
-        String email = jwtUtil.extractEmail(token);
-        User user = userRepository.findByEmail(email)
+        Long userId = jwtUtil.extractUserId(token);
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserProfileResponse response = new UserProfileResponse(
                 user.getId(),
                 user.getFullName(),
                 user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getCpf()
+                user.getEmail()
         );
 
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/change-data")
-    public ResponseEntity<?> changeEmail(
+    public ResponseEntity<?> changeData(
             @RequestHeader("Authorization") String authHeader,
-            @RequestParam String newEmail,
-            @RequestParam String password
+            @RequestBody ChangeDataRequest request
     ) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token missing or invalid");
@@ -109,22 +105,41 @@ public class AuthController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Verifica senha
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        // Verifica senha obrigatória
+        if (request.getPassword() == null ||
+            !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
         }
 
-        // Verifica se o novo e-mail já está em uso
-        if (userRepository.findByEmail(newEmail).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already in use");
+        boolean updated = false;
+
+        // Atualiza apenas o que foi enviado
+        if (request.getNewEmail() != null && !request.getNewEmail().isBlank()) {
+            if (userRepository.findByEmail(request.getNewEmail()).isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already in use");
+            }
+            user.setEmail(request.getNewEmail());
+            updated = true;
         }
 
-        user.setEmail(newEmail);
+        if (request.getNewNickname() != null && !request.getNewNickname().isBlank()) {
+            user.setNickname(request.getNewNickname());
+            updated = true;
+        }
+
+        if (request.getNewPhone() != null && !request.getNewPhone().isBlank()) {
+            user.setPhone(request.getNewPhone());
+            updated = true;
+        }
+
+        if (!updated) {
+            return ResponseEntity.badRequest().body("No valid fields to update");
+        }
+
         userRepository.save(user);
 
-        // Gera novo token com o e-mail atualizado
-        String newToken = jwtUtil.generateToken(user.getId(), user.getEmail());
-
+        // Gera novo token (se email mudou)
+        String newToken = jwtUtil.generateToken(user.getId());
         return ResponseEntity.ok(new TokenResponse(newToken));
     }
 }

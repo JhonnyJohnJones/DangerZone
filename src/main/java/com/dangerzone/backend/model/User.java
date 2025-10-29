@@ -27,12 +27,6 @@ public class User {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true, length = 11)
-    private String cpf;
-
-    @Column(nullable = false, unique = true)
-    private String phone;
-
     // Método utilitário para setar senha com hash
     public void setPasswordHash(String rawPassword) {
         this.password = new BCryptPasswordEncoder().encode(rawPassword);

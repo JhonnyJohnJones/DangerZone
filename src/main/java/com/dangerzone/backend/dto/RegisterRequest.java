@@ -10,6 +10,4 @@ public class RegisterRequest {
     private String nickname;
     private String email;
     private String phone;
-    private String cpf;
-    private String password;
 }

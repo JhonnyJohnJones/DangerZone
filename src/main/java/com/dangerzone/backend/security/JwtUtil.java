@@ -23,31 +23,25 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    // Gera token com email e ID do usuário
-    public String generateToken(Long userId, String email) {
+    // Gera token com o ID
+    public String generateToken(Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(email)
+                .setSubject(String.valueOf(userId))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(secretKey)
                 .compact();
     }
 
-    // Extrai email do token
-    public String extractEmail(String token) {
-        return getClaims(token).getSubject();
-    }
-
-    // Extrai ID do usuário do token
+    // Extrai o ID do usuário do token
     public Long extractUserId(String token) {
-        return getClaims(token).get("userId", Long.class);
+        return Long.valueOf(getClaims(token).getSubject());
     }
 
-    // Valida token
     public boolean isTokenValid(String token) {
         try {
             Claims claims = getClaims(token);
@@ -57,7 +51,6 @@ public class JwtUtil {
         }
     }
 
-    // Recupera claims
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
