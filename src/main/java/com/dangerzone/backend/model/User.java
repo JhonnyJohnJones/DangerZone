@@ -23,4 +23,9 @@ public class User {
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
+
+    // Método utilitário para setar senha com hash
+    public void setPasswordHash(String rawPassword) {
+        this.password = new BCryptPasswordEncoder().encode(rawPassword);
+    }
 }

@@ -19,7 +19,7 @@ public class UserService {
 
         User user = new User();
         user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setPasswordHash(rawPassword);
         user.setFullName(fullName);
 
         return userRepository.save(user);
