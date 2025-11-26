@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -13,35 +15,29 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    /**
-     * Registra um novo usuário.
-     * Cria hash da senha antes de salvar.
-     */
-    public User register(String email, String rawPassword, String nickname,
-                         String fullName, String cpf, String phone) {
+    public User register(String email, String rawPassword, String fullName) {
 
         User user = new User();
         user.setEmail(email);
-        user.setPasswordHash(rawPassword);
-        user.setNickname(nickname);
+        user.setPassword(passwordEncoder.encode(rawPassword));
         user.setFullName(fullName);
-        user.setCpf(cpf);
-        user.setPhone(phone);
 
         return userRepository.save(user);
     }
 
-    /**
-     * Busca usuário pelo email.
-     */
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
-    /**
-     * Valida senha digitada com a senha criptografada do banco.
-     */
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
     public boolean checkPassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    public User change(User user) {
+        return userRepository.save(user);
     }
 }

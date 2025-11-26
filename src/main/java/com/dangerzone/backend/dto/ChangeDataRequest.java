@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class ChangeDataRequest {
     private String newEmail;
-    private String newNickname;
+    private String newFullName;
     private String password;
 }

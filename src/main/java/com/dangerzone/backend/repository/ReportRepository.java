@@ -22,17 +22,15 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     // Busca relatórios próximos a uma localização (dentro de um raio em km)
     @Query("""
         SELECT r FROM Report r
-        WHERE (
-            6371 * acos(
-                cos(radians(:latitude)) * cos(radians(r.latitude)) *
-                cos(radians(r.longitude) - radians(:longitude)) +
-                sin(radians(:latitude)) * sin(radians(r.latitude))
-            )
-        ) <= :radius
+        WHERE 
+            r.latitude BETWEEN (:latitude - :radius) AND (:latitude + :radius)
+            AND 
+            r.longitude BETWEEN (:longitude - :radius) AND (:longitude + :radius)
         """)
     List<Report> findReportsNearLocation(
         @Param("latitude") Double latitude,
         @Param("longitude") Double longitude,
-        @Param("radius") Double radiusKm
+        @Param("radius") Double radiusDegrees
     );
+
 }

@@ -18,9 +18,9 @@ public class HeatmapController {
     public ResponseEntity<Map<String, Object>> getHeatmap(
             @RequestParam Double latitude,
             @RequestParam Double longitude,
-            @RequestParam(required = false, defaultValue = "5.0") Double radiusKm
+            @RequestParam(required = false, defaultValue = "5.0") Double radiusDegrees
     ) {
-        Map<String, Object> result = reportService.generateHeatmap(latitude, longitude, radiusKm);
+        Map<String, Object> result = reportService.generateHeatmap(latitude, longitude, radiusDegrees);
         return ResponseEntity.ok(result);
     }
 }

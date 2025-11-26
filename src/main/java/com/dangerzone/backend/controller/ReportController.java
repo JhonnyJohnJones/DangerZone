@@ -2,8 +2,7 @@ package com.dangerzone.backend.controller;
 
 import com.dangerzone.backend.model.Report;
 import com.dangerzone.backend.model.User;
-import com.dangerzone.backend.repository.ReportRepository;
-import com.dangerzone.backend.repository.UserRepository;
+import com.dangerzone.backend.service.ReportService;
 import com.dangerzone.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,60 +17,57 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportController {
 
-    private final ReportRepository reportRepository;
-    private final UserRepository userRepository;
+    private final ReportService reportService;
+    private final UserService userService;
     private final JwtUtil jwtUtil;
 
     @PostMapping
     public ResponseEntity<?> createReport(
             @RequestHeader("Authorization") String tokenHeader,
-            @RequestBody Report report
+            @RequestBody Report reportRequest
     ) {
         try {
-            // Extrai token do header (sem o prefixo Bearer)
+            // Extrai token
             String token = tokenHeader.replace("Bearer ", "").trim();
 
-            // Extrai userId
+            // Extrai userId do token
             Long userId = jwtUtil.extractUserId(token);
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
-            // Associa o usuário
-            report.setUser(user);
+            // Cria um "User" apenas com o ID
+            User user = new User();
+            user.setId(userId);
 
-            // Se data ou horário não vierem, define agora
-            if (report.getData() == null) {
-                report.setData(LocalDate.now());
-            }
-            if (report.getHorario() == null) {
-                report.setHorario(LocalDateTime.now());
-            }
+            // Define valores padrão
+            LocalDate data = (reportRequest.getData() != null)
+                    ? reportRequest.getData()
+                    : LocalDate.now();
 
-            // Salva no banco
-            Report saved = reportRepository.save(report);
+            LocalDateTime horario = (reportRequest.getHorario() != null)
+                    ? reportRequest.getHorario()
+                    : LocalDateTime.now();
+
+            // Chama o service
+            Report saved = reportService.createReport(
+                    user,
+                    reportRequest.isAnonymous(),
+                    reportRequest.getCrimeType(),
+                    reportRequest.getLatitude(),
+                    reportRequest.getLongitude(),
+                    reportRequest.getCep(),
+                    reportRequest.getPais(),
+                    reportRequest.getEstado(),
+                    reportRequest.getCidade(),
+                    reportRequest.getBairro(),
+                    reportRequest.getEndereco(),
+                    data,
+                    horario,
+                    reportRequest.getDescricao()
+            );
+
             return ResponseEntity.ok(saved);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao registrar report: " + e.getMessage());
-        }
-    }
-    
-    @GetMapping("/me")
-    public ResponseEntity<?> getUserReports(
-            @RequestHeader("Authorization") String tokenHeader
-    ) {
-        try {
-            String token = tokenHeader.replace("Bearer ", "").trim();
-            Long userId = jwtUtil.extractUserId(token);
-
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-
-            List<Report> reports = reportRepository.findByUser(user);
-            return ResponseEntity.ok(reports);
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erro ao buscar histórico: " + e.getMessage());
         }
     }
 }

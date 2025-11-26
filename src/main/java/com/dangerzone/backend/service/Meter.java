@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class ConsolidatedCrime {
+public class Meter {
 
     private String crimeType;
     private double latitude;
@@ -20,11 +20,11 @@ public class ConsolidatedCrime {
     private LocalDateTime dateTime;
     private final List<Report> reports = new ArrayList<>();
 
-    public ConsolidatedCrime(Report report) {
+    public Meter(Report report) {
         this.crimeType = report.getCrimeType();
         this.latitude = report.getLatitude();
         this.longitude = report.getLongitude();
-        this.dateTime = report.getHorario(); // usa LocalDateTime
+        this.dateTime = report.getHorario();
         this.count = 1;
         this.veracity = 1;
         this.dangerLevel = getDangerLevelFromType(report.getCrimeType());

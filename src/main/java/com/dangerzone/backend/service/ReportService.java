@@ -48,21 +48,17 @@ public class ReportService {
         return reportRepository.findByUser(user);
     }
 
-    public List<Report> getReportsNearLocation(Double latitude, Double longitude, Double radiusKm) {
-        return reportRepository.findReportsNearLocation(latitude, longitude, radiusKm);
-    }
-
-    public List<Report> getAllReports() {
-        return reportRepository.findAll();
+    public List<Report> getReportsNearLocation(Double latitude, Double longitude, Double radiusDegrees) {
+        return reportRepository.findReportsNearLocation(latitude, longitude, radiusDegrees);
     }
 
     // ==========================================
     // Lógica do Heatmap
     // ==========================================
 
-    public Map<String, Object> generateHeatmap(Double latitude, Double longitude, Double radiusKm) {
-        List<Report> reports = reportRepository.findReportsNearLocation(latitude, longitude, radiusKm);
-        List<ConsolidatedCrime> consolidated = consolidateReports(reports);
+    public Map<String, Object> generateHeatmap(Double latitude, Double longitude, Double radiusDegrees) {
+        List<Report> reports = reportRepository.findReportsNearLocation(latitude, longitude, radiusDegrees);
+        List<Meter> consolidated = consolidateReports(reports);
 
         List<Map<String, Object>> points = consolidated.stream()
                 .map(c -> {
@@ -81,13 +77,13 @@ public class ReportService {
         return Map.of("points", points);
     }
 
-    private List<ConsolidatedCrime> consolidateReports(List<Report> reports) {
-        List<ConsolidatedCrime> groups = new ArrayList<>();
+    private List<Meter> consolidateReports(List<Report> reports) {
+        List<Meter> groups = new ArrayList<>();
 
         for (Report report : reports) {
             boolean merged = false;
 
-            for (ConsolidatedCrime group : groups) {
+            for (Meter group : groups) {
                 if (isSimilar(group, report)) {
                     group.addReport(report);
                     merged = true;
@@ -96,43 +92,34 @@ public class ReportService {
             }
 
             if (!merged) {
-                groups.add(new ConsolidatedCrime(report));
+                groups.add(new Meter(report));
             }
         }
 
         return groups;
     }
 
-    private boolean isSimilar(ConsolidatedCrime group, Report report) {
+    private boolean isSimilar(Meter group, Report report) {
         if (!group.getCrimeType().equalsIgnoreCase(report.getCrimeType())) return false;
 
-        double distance = haversine(
-                group.getLatitude(), group.getLongitude(),
-                report.getLatitude(), report.getLongitude()
-        );
+        // ---- PROXIMIDADE EM GRAUS ----
+        double diffLat = Math.abs(group.getLatitude() - report.getLatitude());
+        double diffLng = Math.abs(group.getLongitude() - report.getLongitude());
 
-        if (distance > 0.2) return false; // > 200 metros
+        // 0.004 graus ≈ 400m
+        if (diffLat > 0.004 || diffLng > 0.004) return false;
 
+        // ---- PROXIMIDADE DE TEMPO ----
         if (group.getDateTime() != null && report.getHorario() != null) {
             long minutesDiff = Duration.between(
                     group.getDateTime(),
                     report.getHorario()
             ).toMinutes();
 
-            if (Math.abs(minutesDiff) > 30) return false; // mais de 30 minutos de diferença
+            if (Math.abs(minutesDiff) > 30) return false; // mais de 30 minutos
         }
 
         return true;
     }
 
-    private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
 }
