@@ -17,7 +17,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     List<Report> findByCrimeType(String crimeType);
 
     // Caso queira buscar apenas relatórios anônimos
-    List<Report> findByAnonimoTrue();
+    List<Report> findByAnonymousTrue();
 
     // Busca relatórios próximos a uma localização (dentro de um raio em km)
     @Query("""

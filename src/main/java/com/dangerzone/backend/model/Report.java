@@ -23,7 +23,7 @@ public class Report {
     private User user;
 
     @Column(nullable = false)
-    private boolean anonimo;
+    private boolean anonymous;
 
     @Column(name = "crime_type", nullable = false)
     private String crimeType;
