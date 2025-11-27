@@ -18,7 +18,7 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
 
-    public Report createReport(User user, boolean anonymous, String crimeType,
+    public Report createReport(User user, boolean anonimo, String crimeType,
                                Double latitude, Double longitude, String cep,
                                String pais, String estado, String cidade,
                                String bairro, String endereco,
@@ -27,7 +27,7 @@ public class ReportService {
 
         Report report = new Report();
         report.setUser(user);
-        report.setAnonymous(anonymous);
+        report.setAnonimo(anonimo);
         report.setCrimeType(crimeType);
         report.setLatitude(latitude);
         report.setLongitude(longitude);

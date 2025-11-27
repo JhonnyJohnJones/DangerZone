@@ -47,12 +47,12 @@ public class Meter {
 
     private double getDangerLevelFromType(String crimeType) {
         switch (crimeType.toLowerCase()) {
-            case "homicídio":
+            case "latrocínio":
                 return 5.0;
-            case "roubo":
+            case "homicídio":
                 return 4.0;
             case "assalto":
-                return 3.5;
+                return 3.0;
             case "furto":
                 return 2.0;
             case "vandalismo":

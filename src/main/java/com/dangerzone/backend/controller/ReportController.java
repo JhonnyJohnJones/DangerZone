@@ -49,7 +49,7 @@ public class ReportController {
             // Chama o service
             Report saved = reportService.createReport(
                     user,
-                    reportRequest.isAnonymous(),
+                    reportRequest.isAnonimo(),
                     reportRequest.getCrimeType(),
                     reportRequest.getLatitude(),
                     reportRequest.getLongitude(),
