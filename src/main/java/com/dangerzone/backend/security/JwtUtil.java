@@ -7,9 +7,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.security.SignatureException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
 public class JwtUtil {
@@ -44,13 +49,25 @@ public class JwtUtil {
 
     public boolean isTokenValid(String token) {
         try {
-            Claims claims = getClaims(token);
-            return !claims.getExpiration().before(new Date());
-        } catch (Exception e) {
-            return false;
-        }
-    }
+            Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token);
+            return true;
 
+        } catch (ExpiredJwtException e) {
+            System.out.println("TOKEN ERROR → Token expirado: " + e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            System.out.println("TOKEN ERROR → Token não suportado: " + e.getMessage());
+        } catch (MalformedJwtException e) {
+            System.out.println("TOKEN ERROR → Token mal formado: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("TOKEN ERROR → Token vazio ou nulo: " + e.getMessage());
+        }
+
+        return false;
+    }
+    
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)

@@ -19,48 +19,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Desativa CSRF (não é necessário para APIs REST)
                 .csrf().disable()
-
-                // Configura quais endpoints exigem autenticação
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/public/**").permitAll()
-
-                        // Endpoints protegidos
-                        .requestMatchers("/api/**").authenticated()
-                        .requestMatchers("/heatmap/**").authenticated()
-
-                        // Bloqueia qualquer outro endpoint não listado
-                        .anyRequest().denyAll()
+                        .anyRequest().permitAll() // ⚠️ Permitir tudo mas validar manualmente
                 )
-
-                // Define sessão como stateless (sem sessão HTTP)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                // Adiciona o filtro JWT antes do filtro de autenticação padrão
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                );
 
         return http.build();
     }
 
-    // Configura o gerenciador de autenticação
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    // Criptografia de senhas
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }

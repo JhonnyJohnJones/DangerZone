@@ -18,7 +18,6 @@ import java.util.List;
 public class ReportController {
 
     private final ReportService reportService;
-    private final UserService userService;
     private final JwtUtil jwtUtil;
 
     @PostMapping

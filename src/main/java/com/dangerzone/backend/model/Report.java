@@ -29,10 +29,10 @@ public class Report {
     private String crimeType;
 
     // Coordenadas (latitude, longitude)
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Double latitude;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Double longitude;
 
     @Column(length = 9) // Ex: "12345-678"
