@@ -10,9 +10,11 @@ public class UserReportResponse {
     private String crimeType;
     private Double latitude;
     private Double longitude;
+    private String pais;
     private String cidade;
     private String bairro;
     private String endereco;
+    private String cep;
     private String descricao;
     private String data;      // formatado como string
     private String horario;   // formatado como string
