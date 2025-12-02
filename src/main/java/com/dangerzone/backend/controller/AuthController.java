@@ -13,6 +13,7 @@ import com.dangerzone.backend.service.ReportService;
 import com.dangerzone.backend.security.JwtUtil;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -140,11 +141,11 @@ public class AuthController {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Verifica senha obrigatória
-        if (request.getPassword() == null ||
-            !userService.checkPassword(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
-        }
+        // // Verifica senha obrigatória
+        // if (request.getPassword() == null ||
+        //     !userService.checkPassword(request.getPassword(), user.getPassword())) {
+        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
+        // }
 
         boolean updated = false;
 
@@ -168,8 +169,13 @@ public class AuthController {
 
         userService.change(user);
 
-        // Gera novo token (se email mudou)
-        String newToken = jwtUtil.generateToken(user.getId());
-        return ResponseEntity.ok(new TokenResponse(newToken));
+        // // Gera novo token (se email mudou)
+        // String newToken = jwtUtil.generateToken(user.getId());
+        return ResponseEntity.ok(
+                Map.of(
+                    "status", "success",
+                    "description", "Dados alterados com sucesso"
+                )
+        );
     }
 }

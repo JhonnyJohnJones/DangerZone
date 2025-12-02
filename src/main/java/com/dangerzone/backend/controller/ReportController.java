@@ -45,10 +45,12 @@ public class ReportController {
                     ? reportRequest.getHorario()
                     : LocalDateTime.now();
 
+            boolean anonymous = Boolean.TRUE.equals(reportRequest.isAnonymous());
+
             // Chama o service
             Report saved = reportService.createReport(
                     user,
-                    reportRequest.isAnonymous(),
+                    anonymous,
                     reportRequest.getCrimeType(),
                     reportRequest.getLatitude(),
                     reportRequest.getLongitude(),
