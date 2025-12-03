@@ -54,9 +54,9 @@ public class AuthController {
         try {
             // Agora usamos o método adequado do UserService
             User user = userService.register(
-                request.getFullName(),
                 request.getEmail(),
-                request.getPassword()
+                request.getPassword(),
+                request.getFullName()
             );
 
             // Gera token para o novo usuário
