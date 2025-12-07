@@ -49,7 +49,8 @@ public class ReportService {
     }
 
     public List<Report> getReportsNearLocation(Double latitude, Double longitude, Double radiusDegrees) {
-        return reportRepository.findReportsNearLocation(latitude, longitude, radiusDegrees);
+        LocalDateTime limitDate = LocalDateTime.now().minusMonths(6);
+        return reportRepository.findReportsNearLocation(latitude, longitude, radiusDegrees, limitDate);
     }
 
     // ==========================================
