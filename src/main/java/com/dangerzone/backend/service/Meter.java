@@ -42,7 +42,24 @@ public class Meter {
     }
 
     private double calculateScore() {
-        return (veracity * 1.2) + dangerLevel;
+
+        // Fator temporal baseado em semanas
+        double timeFactor = reports.stream()
+                .mapToDouble(r -> {
+                    long weeks = java.time.Duration
+                            .between(r.getHorario(), LocalDateTime.now())
+                            .toDays() / 7;
+
+                    return 1.0 / (1.0 + weeks); // Peso por semanas
+                })
+                .average()
+                .orElse(1.0); // caso tenha apenas 1 report ou vazio
+
+        // Score base
+        double baseScore = (veracity * 1.2) + dangerLevel;
+
+        // Score final ponderado pelo tempo (em semanas)
+        return baseScore * timeFactor;
     }
 
     private double getDangerLevelFromType(String crimeType) {

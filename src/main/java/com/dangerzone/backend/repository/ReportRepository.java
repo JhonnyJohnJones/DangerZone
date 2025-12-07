@@ -4,8 +4,9 @@ import com.dangerzone.backend.model.Report;
 import com.dangerzone.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query; 
-import org.springframework.data.repository.query.Param; 
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
@@ -26,11 +27,14 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
             r.latitude BETWEEN (:latitude - :radius) AND (:latitude + :radius)
             AND 
             r.longitude BETWEEN (:longitude - :radius) AND (:longitude + :radius)
+            AND
+            r.horario >= :limitDate
         """)
     List<Report> findReportsNearLocation(
         @Param("latitude") Double latitude,
         @Param("longitude") Double longitude,
-        @Param("radius") Double radiusDegrees
+        @Param("radius") Double radiusDegrees,
+        @Param("limitDate") LocalDateTime limitDate
     );
 
 }

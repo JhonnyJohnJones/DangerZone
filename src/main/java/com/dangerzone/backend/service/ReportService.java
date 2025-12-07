@@ -57,7 +57,8 @@ public class ReportService {
     // ==========================================
 
     public Map<String, Object> generateHeatmap(Double latitude, Double longitude, Double radiusDegrees) {
-        List<Report> reports = reportRepository.findReportsNearLocation(latitude, longitude, radiusDegrees);
+        LocalDateTime limitDate = LocalDateTime.now().minusMonths(6);
+        List<Report> reports = reportRepository.findReportsNearLocation(latitude, longitude, radiusDegrees, limitDate);
         List<Meter> consolidated = consolidateReports(reports);
 
         List<Map<String, Object>> points = consolidated.stream()

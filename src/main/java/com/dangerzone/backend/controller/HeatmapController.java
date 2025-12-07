@@ -16,10 +16,20 @@ public class HeatmapController {
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getHeatmap(
+            @RequestHeader("Authorization") String authHeader,
             @RequestParam Double latitude,
             @RequestParam Double longitude,
             @RequestParam(required = false, defaultValue = "0.2") Double radiusDegrees
     ) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token missing or invalid");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtUtil.isTokenValid(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+        
         Map<String, Object> result = reportService.generateHeatmap(latitude, longitude, radiusDegrees);
         return ResponseEntity.ok(result);
     }
