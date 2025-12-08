@@ -28,13 +28,17 @@ public class HeatmapController {
             @RequestParam(required = false, defaultValue = "0.2") Double radiusDegrees
     ) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token missing or invalid");
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Token missing or invalid"));
         }
 
         String token = authHeader.substring(7);
         
         if (!jwtUtil.isTokenValid(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Invalid token"));
         }
 
         Map<String, Object> result = reportService.generateHeatmap(latitude, longitude, radiusDegrees);
