@@ -1,9 +1,14 @@
 package com.dangerzone.backend.controller;
 
+import com.dangerzone.backend.security.JwtUtil;
 import com.dangerzone.backend.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.http.HttpStatus;
+
+import com.dangerzone.backend.security.JwtUtil;
 
 import java.util.Map;
 
@@ -13,6 +18,7 @@ import java.util.Map;
 public class HeatmapController {
 
     private final ReportService reportService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getHeatmap(
@@ -26,10 +32,11 @@ public class HeatmapController {
         }
 
         String token = authHeader.substring(7);
+        
         if (!jwtUtil.isTokenValid(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
-        
+
         Map<String, Object> result = reportService.generateHeatmap(latitude, longitude, radiusDegrees);
         return ResponseEntity.ok(result);
     }
